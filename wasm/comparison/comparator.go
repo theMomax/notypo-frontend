@@ -12,12 +12,12 @@ import (
 	"github.com/theMomax/notypo-frontend/wasm/errors"
 )
 
-// backspace
-const bs = '\u0008'
+// BS stands for backspace
+const BS = '\u0008'
 
 // ErrIllegalModelInput is thrown, if the "model" stream contains a
 // non-printable Character as defined by the unicode.IsPrint method
-var ErrIllegalModelInput = errors.New("the model-input-stream contained an illegal character", errors.Terminating, errors.Input)
+var ErrIllegalModelInput = errors.New("the model-input-stream contained an illegal character", errors.Critical, errors.Input)
 
 // Character is the required type for the input-streams
 type Character interface {
@@ -77,6 +77,7 @@ type Statistics interface {
 // "model" stream contains an illegal Character
 func Compare(model, attempt <-chan Character, comp chan<- Comparison, timeout ...time.Duration) {
 	done := make(chan bool)
+	var stop bool
 
 	if len(timeout) == 1 {
 		time.AfterFunc(timeout[0], func() {
@@ -85,6 +86,7 @@ func Compare(model, attempt <-chan Character, comp chan<- Comparison, timeout ..
 	}
 	go func() {
 		<-done
+		stop = true
 		close(done)
 		close(comp)
 	}()
@@ -120,7 +122,10 @@ func Compare(model, attempt <-chan Character, comp chan<- Comparison, timeout ..
 		}
 
 		c := comparison{}
-		if a.Rune() == '\u0008' {
+		if a.Rune() == BS {
+			if index == 0 {
+				continue
+			}
 			c.state = &state{
 				correct:       index-2 <= indexOfLastCorrectState,
 				statusChanged: index-2 == indexOfLastCorrectState,
@@ -150,19 +155,23 @@ func Compare(model, attempt <-chan Character, comp chan<- Comparison, timeout ..
 			if indexOfLastCorrectState == index {
 				indexOfLastCorrectState--
 			}
+
 		} else {
 			m, mok := mbuf.get(index)
 			if !mok {
 				done <- true
 				return
 			}
-
 			if !unicode.IsPrint(m.Rune()) {
 				done <- true
-				panic(ErrIllegalModelInput)
+				r := m.Rune()
+				if r == BS {
+					r = '\u2190'
+				}
+				panic(ErrIllegalModelInput.Append(string(r)))
 			}
 
-			if m == a {
+			if m.Rune() == a.Rune() {
 				if oldState.Correct() {
 					indexOfLastCorrectState = index
 					c.state = &state{
@@ -239,6 +248,9 @@ func Compare(model, attempt <-chan Character, comp chan<- Comparison, timeout ..
 				}
 				index++
 			}
+		}
+		if stop {
+			return
 		}
 		comp <- &c
 		oldState = c.state

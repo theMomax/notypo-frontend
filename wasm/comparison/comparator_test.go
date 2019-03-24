@@ -7,12 +7,16 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/theMomax/notypo-frontend/wasm/errors"
 )
 
 func TestIllegalModelInput(t *testing.T) {
-	assert.PanicsWithValue(t, ErrIllegalModelInput, func() {
-		Compare(stream('a', 'b', 'c', bs), stream('a', 'b', 'c', 'd'), make(chan Comparison, 4))
-	})
+	// panic assertion
+	defer func() {
+		err := recover().(errors.Error)
+		assert.Equal(t, ErrIllegalModelInput.Type(), err.Type())
+	}()
+	Compare(stream('a', 'b', 'c', BS), stream('a', 'b', 'c', 'd'), make(chan Comparison, 4))
 }
 
 func TestTimeout(t *testing.T) {
@@ -26,10 +30,10 @@ func TestTimeout(t *testing.T) {
 
 func TestClosingInputChannel(t *testing.T) {
 	c := make(chan Comparison, 0)
-	go Compare(stream('a', 'b', 'c', 'd', 'e'), stream('a', 'b', 'c', 'd', 'd', bs, 'e'), c)
+	go Compare(stream('a', 'b', 'c', 'd', 'e'), stream('a', 'b', 'c', 'd', 'd', BS, 'e'), c)
 	assert.Equal(t, 7, len(consume(c)))
 	c = make(chan Comparison, 0)
-	go Compare(stream('a', 'b', 'c', 'd'), stream('a', 'b', 'c', 'd', 'd', bs, 'e'), c)
+	go Compare(stream('a', 'b', 'c', 'd'), stream('a', 'b', 'c', 'd', 'd', BS, 'e'), c)
 	assert.Equal(t, 4, len(consume(c)))
 }
 
@@ -42,12 +46,23 @@ func TestEmptyInputStream(t *testing.T) {
 	assert.Equal(t, 0, len(consume(c)))
 }
 
+func TestBackspaceOverflow(t *testing.T) {
+	c := make(chan Comparison, 0)
+	go Compare(stream('a', 'b', 'c', 'd', 'e'), stream('a', BS, BS, BS, 'a', 'b', 'c', 'd', 'd', BS, 'e'), c)
+	assert.Equal(t, 9, len(consume(c)))
+	c = make(chan Comparison, 0)
+	go Compare(stream('a', 'b', 'c', 'd', 'e'), stream(BS, 'a', 'b', 'c', 'd', 'd', BS, 'e'), c)
+	con := consume(c)
+	assert.Equal(t, 7, len(con))
+	assert.Equal(t, true, con[len(con)-1].State().Correct())
+}
+
 func TestComparisonLogic(t *testing.T) {
 	c := make(chan Comparison)
 	go Compare(stream(
 		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', ' ', 'j', 'k', ' ', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
 	), stream(
-		'a', 'b', 'b', '1', ' ', '3', bs, bs, 'c', bs, bs, bs, 'c', 'd', 'e', bs, 'e', 'f', 'g', 'h', 'i', ' ', 'j', 'k', ' ', 'l', 'm', 'n', ' ', bs, 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'x', 'z',
+		'a', 'b', 'b', '1', ' ', '3', BS, BS, 'c', BS, BS, BS, 'c', 'd', 'e', BS, 'e', 'f', 'g', 'h', 'i', ' ', 'j', 'k', ' ', 'l', 'm', 'n', ' ', BS, 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'x', 'z',
 	), c)
 	comp := consume(c)
 	if len(comp) != 42 {
@@ -80,7 +95,7 @@ func TestComparisonLogic(t *testing.T) {
 				return nil
 			}
 			return comp[i].Changes()[0].Rune()
-		}, 'a', 'b', 'b', '1', ' ', '3', bs, bs, 'c', bs, bs, bs, 'c', 'd', 'e', bs, 'e', 'f', 'g', 'h', 'i', ' ', 'j', 'k', ' ', 'l', 'm', 'n', ' ', bs, 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'x', 'z')
+		}, 'a', 'b', 'b', '1', ' ', '3', BS, BS, 'c', BS, BS, BS, 'c', 'd', 'e', BS, 'e', 'f', 'g', 'h', 'i', ' ', 'j', 'k', ' ', 'l', 'm', 'n', ' ', BS, 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'x', 'z')
 	})
 	t.Run("Changes()[0].Position()", func(t *testing.T) {
 		compare(t, func(i int) interface{} {
