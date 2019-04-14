@@ -6,6 +6,7 @@
     <title>notypo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" media="screen" href="style/css/main.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="style/css/game.css">
     <script type="text/javascript" src="js/wasm_exec.js"></script>
     <script type="text/javascript">
         async function run(fileUrl) {
@@ -23,6 +24,26 @@
     </script>
 </head>
 <body>
-    Loading...
+    <div id="game" class="page">
+        <div id="stats">
+            <div id="cpm"><div class="wrapper"><span id="cpm_val" class="value">0</span><span>characters per minute</span></div></div>
+            <div id="wpm">
+              <div class="wrapper">
+                <span id="wpm_val" class="value">0</span>
+                <span>words per minute</span>
+              </div>
+            </div>
+            <div id="fr"><div class="wrapper"><span id="fr_val" class="value">0%</span><span>failure rate</span></div></div>
+          </div>
+          <div class="scale"><div id="time_scale"></div></div>
+          <div id="typewriter">
+            <div id="done"></div>
+            <div id="cursor" class="cursor_blink">|</div>
+            <div id="todo"></div>
+          </div>
+          <div id="errors">
+      
+          </div>
+      </div>
 </body>
 </html>

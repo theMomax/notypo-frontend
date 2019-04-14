@@ -1,17 +1,16 @@
 package main
 
 import (
+	"log"
 	"net/url"
-	"strconv"
 	"time"
 
-	"github.com/gopherjs/vecty"
-	"github.com/gopherjs/vecty/elem"
 	"github.com/theMomax/notypo-backend/api"
 	"github.com/theMomax/notypo-frontend/wasm/comparison"
 	"github.com/theMomax/notypo-frontend/wasm/config"
 	"github.com/theMomax/notypo-frontend/wasm/errors"
 	"github.com/theMomax/notypo-frontend/wasm/game"
+	"github.com/theMomax/notypo-frontend/wasm/ui"
 )
 
 func main() {
@@ -19,127 +18,48 @@ func main() {
 		Scheme: "http",
 		Host:   "localhost:4000",
 	}
-	timeout := time.Minute
 	config.Game = config.GameConfig{
 		StreamSupplierDescription: api.StreamSupplierDescription{
 			Type: api.Random,
 			Charset: []rune{
-				'a', 'b', 'c', 'd', 'e', 'f', 'd', 'e', 'f', 'd',
+				'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
 			},
 		},
-		Timeout: &timeout,
 	}
 
-	vecty.SetTitle("notypo")
-	gv := &GameView{
-		errors:     make([]errors.Error, 0, 1),
-		characters: make([]character, 0, 500),
-	}
-
-	go func() {
-		for {
-			var stats comparison.Statistics
-			gv.message = ""
-			vecty.Rerender(gv)
-			game.HandleGame(&config.Game,
-				func() <-chan comparison.Character {
-					return game.ModelInputProvider(&config.Game.StreamSupplierDescription)
-				},
-				func() <-chan comparison.Character {
-					return game.AttemptInputProvider(nil)
-				}, func(c comparison.Character) {
-					gv.characters = append(gv.characters, character{c.Rune(), StateUntreated})
-					vecty.Rerender(gv)
-				}, func(c comparison.Comparison) {
-					if len(c.Changes()) == 1 {
-						change := c.Changes()[0]
-						if change.Deletion() {
-							gv.characters[change.Position()].state = StateUntreated
-						} else {
-							if c.State().Correct() {
-								gv.characters[change.Position()].state = StateCorrect
-							} else {
-								if change.Correct() {
-									gv.characters[change.Position()].state = StateInvalid
-								} else {
-									gv.characters[change.Position()].state = StateWrong
-								}
-							}
-						}
-						vecty.Rerender(gv)
+	for {
+		var started bool
+		game.HandleGame(&config.Game,
+			func() <-chan comparison.Character {
+				return game.ModelInputProvider(&config.Game.StreamSupplierDescription)
+			},
+			func() <-chan comparison.Character {
+				return game.AttemptInputProvider(append(config.Game.StreamSupplierDescription.Charset, comparison.BS), func(r rune) {
+					if !started {
+						started = true
+						ui.GP.SetTimer(time.Minute)
+						time.AfterFunc(time.Minute, game.Stop)
 					}
-					stats = c.Statistics()
-				}, func(e errors.Error) {
-					gv.errors = append(gv.errors, e)
-					vecty.Rerender(gv)
 				})
-			game.Stop()
+			}, func(c comparison.Character) {
+				ui.GP.CreateCharacter(c)
+			}, func(c comparison.Comparison) {
+				if len(c.Changes()) == 1 {
+					change := c.Changes()[0]
+					if change.Deletion() {
+						ui.GP.DeleteChar()
+					} else {
+						ui.GP.TypeChar(c.State().Correct())
+					}
+				}
+				ui.GP.SetCPM(float64(c.Statistics().CorrectCharacters()))
+				ui.GP.SetWPM(float64(c.Statistics().CorrectWords()))
+				ui.GP.SetFR(float64(c.Statistics().FailureRate()))
+			}, func(e errors.Error) {
+				log.Println(e.Error())
+			})
 
-			gv.message = strconv.Itoa(stats.CorrectCharacters())
-			vecty.Rerender(gv)
-			time.Sleep(5 * time.Second)
-			gv.errors = make([]errors.Error, 0, 1)
-			gv.characters = make([]character, 0, 500)
-		}
-	}()
-
-	vecty.RenderBody(gv)
-}
-
-type GameView struct {
-	vecty.Core
-	errors     []errors.Error
-	characters []character
-	message    string
-}
-
-func (g *GameView) Render() vecty.ComponentOrHTML {
-	chars := make([]vecty.MarkupOrChild, 0, len(g.characters))
-	for _, c := range g.characters {
-		switch c.state {
-		case StateUntreated:
-			chars = append(chars, elem.Span(vecty.Text(string(c.Rune()))))
-		case StateCorrect:
-			chars = append(chars, elem.Span(vecty.Text(string(c.Rune())), vecty.Markup(
-				vecty.Style("color", "green"),
-			)))
-		case StateInvalid:
-			chars = append(chars, elem.Span(vecty.Text(string(c.Rune())), vecty.Markup(
-				vecty.Style("color", "orange"),
-			)))
-		case StateWrong:
-			chars = append(chars, elem.Span(vecty.Text(string(c.Rune())), vecty.Markup(
-				vecty.Style("color", "red"),
-			)))
-		}
+		time.Sleep(5 * time.Second)
+		ui.GP.ClearGame()
 	}
-	errs := make([]vecty.MarkupOrChild, 0, len(g.errors))
-	for _, e := range g.errors {
-		errs = append(errs, elem.Span(vecty.Text(e.Error())))
-	}
-	return elem.Body(
-		elem.Div(
-			elem.Paragraph(chars...),
-		),
-		elem.Div(elem.Span(vecty.Text(g.message))),
-		elem.Div(errs...),
-	)
 }
-
-type character struct {
-	r     rune
-	state charstate
-}
-
-func (c character) Rune() rune {
-	return c.r
-}
-
-type charstate int
-
-const (
-	StateUntreated charstate = iota
-	StateCorrect
-	StateInvalid
-	StateWrong
-)

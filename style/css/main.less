@@ -5,6 +5,32 @@
     src: url("../fonts/zillaslab.ttf");
 }
 
+@keyframes cursor-blink {
+    0% {
+        opacity: 1;
+    }
+    45% {
+        opacity: 1;
+    }
+    55% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
 @media all {
-    
+    body {
+        width: 100vw;
+        margin: 0;
+        font-family: "Zilla Slab";
+        font-size: 16pt;
+        background-color: @background;
+        color: @text;
+
+        .hidden {
+            display: none;
+        }
+    }
 }

@@ -69,11 +69,7 @@ func HandleGame(config *config.GameConfig, modelOpener, attemptOpener func() <-c
 			close(mCopy)
 		})
 		defer handlePanics(errorHandler)
-		if config.Timeout != nil {
-			comparison.Compare(mCopy, attemptOpener(), cmp, *config.Timeout)
-		} else {
-			comparison.Compare(mCopy, attemptOpener(), cmp)
-		}
+		comparison.Compare(mCopy, attemptOpener(), cmp)
 	}
 	Stop()
 }
@@ -91,22 +87,26 @@ func Stop() {
 // AttemptInputProvider registers EventListeners for the given charset and pipes
 // the events into the returned channel asynchronously. If the given charset is
 // nil, any key is accepted. If there is already a game running, this function
-// panics with ErrAlreadyRunning
-func AttemptInputProvider(charset []comparison.Character) <-chan comparison.Character {
+// panics with ErrAlreadyRunning. In addition all callbacks are called
+// asynchronously after each input
+func AttemptInputProvider(charset []rune, callbacks ...func(rune)) <-chan comparison.Character {
 	sort.Slice(charset, func(i, j int) bool {
-		return charset[i].Rune() < charset[j].Rune()
+		return charset[i] < charset[j]
 	})
 	apt := make(chan comparison.Character, 5)
 	var attemptKeyboardListener js.Func = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		var c comparison.Character
+		var c rune
 		name := args[0].Get("key").String()
 		if name == "Backspace" {
-			c = character(comparison.BS)
+			c = comparison.BS
 		} else {
-			c = character([]rune(name)[0])
+			c = []rune(name)[0]
 		}
 		if charset == nil || contains(charset, c) {
-			apt <- c
+			apt <- character(c)
+			for _, f := range callbacks {
+				go f(c)
+			}
 		}
 		return nil
 	})
@@ -133,7 +133,7 @@ func ModelInputProvider(description *api.StreamSupplierDescription) <-chan compa
 	}
 
 	done := make(chan bool)
-	mod, err := com.ReadStreamConnection(config.Backend.BaseURL, 1, *streamConnectionID, done)
+	mod, err := com.ReadStreamConnection(config.Backend.BaseURL, 50, *streamConnectionID, done)
 	if err != nil {
 		panic(err)
 	}
@@ -158,11 +158,11 @@ func (c character) Rune() rune {
 	return rune(c)
 }
 
-func contains(s []comparison.Character, c comparison.Character) bool {
+func contains(s []rune, c rune) bool {
 	i := sort.Search(len(s), func(i int) bool {
-		return s[i].Rune() >= c.Rune()
+		return s[i] >= c
 	})
-	if i < len(s) && s[i].Rune() == c.Rune() {
+	if i < len(s) && s[i] == c {
 		return true
 	}
 	return false

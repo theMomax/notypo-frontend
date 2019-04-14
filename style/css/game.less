@@ -1,0 +1,154 @@
+@import "colors";
+
+@keyframes cursor-blink {
+    0% {
+        opacity: 1;
+    }
+    45% {
+        opacity: 1;
+    }
+    55% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes timer {
+    0%{
+        width: 0%;
+    }
+    99.9% {
+        width: 100%;
+        background-color: @active;
+    }
+    100% {
+        width: 100%;
+        background-color: @warning;
+    }
+}
+
+@media all {
+    body { 
+        #game {
+            #stats{
+                margin: 20vh 0 0 0;
+                height: 20vw;
+                display: flex;
+                font-size: 12pt;
+                width: 100%;
+                justify-content: center;
+
+                div {
+                    display: inline-block;
+                    margin-left: 2.5vw;
+                    margin-right: 2.5vw;
+                    width: 20vw;
+                    height: 100%;
+                    justify-content: center;
+
+                    .wrapper {
+                        width: 80%;
+                        height: 80%;
+                        position: relative;
+                        padding: 0;
+                        margin: 0 10% 0 10%;
+
+                        .value {
+                            position: absolute;
+                            top: 50%;
+                            margin-top: -0.5em;
+                            font-size: 20pt;
+                        }
+
+                        span {
+                            position: absolute;
+                            top: 50%;
+                            margin-top: 1.5em;
+                            display: block;
+                            width: 100%;
+                            text-align: center;
+                        }
+                    }
+                }
+            }
+
+            .scale {
+                margin-top: 5vh;
+                height: 0.1em;
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                background-color: @passive !important;
+
+                #time_scale {
+                    background-color: @active;
+                }
+
+                .timer {
+                    animation-name: timer;
+                    animation-timing-function: linear;
+                    animation-fill-mode: forwards;
+                }
+            }
+
+            #typewriter{
+                margin: 20vh 0 0 0;
+                display: flex;
+                font-size: 18pt;
+
+                word-break: break-all;
+
+                div {
+                    height: 1.5em;
+                    line-height: 1.5em;
+                    overflow: hidden;
+                    white-space: nowrap;
+
+                    span {
+                        display: inline;
+                    }
+                }
+
+                .correct {
+                    color: @passive;
+                }
+                
+                .wrong {
+                    color: @warning;
+                    text-decoration: line-through;
+                }
+
+                #cursor {
+                    width: 1em;
+                    margin: 0;
+                    padding: 0;
+                    margin-left: -0.5em;
+                    margin-right: -0.5em;
+                    text-align: center;
+                    transform: scaleY(1.5);
+                }
+
+                .cursor_blink {
+                    animation: cursor-blink 1s linear 0.5s infinite;
+                }
+            
+
+                #done {
+                    width: 50%;
+                    margin: 0;
+                    text-align: right;
+                    direction: rtl;
+                }
+
+                #todo{
+                    width: 50%;
+                    margin: 0;
+                    text-align: left;
+                }
+
+            }
+        }
+    }
+}

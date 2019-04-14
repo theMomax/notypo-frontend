@@ -1,6 +1,7 @@
 package comparison
 
 import (
+	"fmt"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -59,6 +60,7 @@ func TestBackspaceOverflow(t *testing.T) {
 
 func TestComparisonLogic(t *testing.T) {
 	c := make(chan Comparison)
+	fmt.Println("=============")
 	go Compare(stream(
 		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', ' ', 'j', 'k', ' ', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
 	), stream(
@@ -153,6 +155,14 @@ func TestComparisonLogic(t *testing.T) {
 			return comp[i].Statistics().TotalMisses()
 		}, 0, 0, 1, 2, 3, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7)
 	})
+	t.Run("Statistics().TotalStrokes()", func(t *testing.T) {
+		compare(t, func(i int) interface{} {
+			if i < 0 || i >= len(comp) {
+				return nil
+			}
+			return comp[i].Statistics().TotalStrokes()
+		}, 1, 2, 3, 4, 5, 6, 6, 6, 7, 7, 7, 7, 8, 9, 10, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35)
+	})
 	t.Run("Statistics().FailureRate()", func(t *testing.T) {
 		match(t, slice(func(i int) interface{} {
 			if i < 0 || i >= len(comp) {
@@ -163,7 +173,7 @@ func TestComparisonLogic(t *testing.T) {
 			if i < 0 || i >= len(comp) {
 				return nil
 			}
-			return float64(comp[i].Statistics().TotalMisses()) / float64(comp[i].Statistics().TotalCharacters())
+			return float64(comp[i].Statistics().TotalMisses()) / float64(comp[i].Statistics().TotalStrokes())
 		}))
 	})
 }

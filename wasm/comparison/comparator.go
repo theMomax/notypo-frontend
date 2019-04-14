@@ -66,7 +66,9 @@ type Statistics interface {
 	// TotalMisses returns the total amount of Characters (excluding backspaces)
 	// , that do not match their model-equivalent
 	TotalMisses() int
-	// FailureRate returns the TotalMisses per TotalCharacters
+	// TotalStrokes returns the total amount of Characters
+	TotalStrokes() int
+	// FailureRate returns the TotalMisses per TotalStrokes
 	FailureRate() float64
 }
 
@@ -103,6 +105,7 @@ func Compare(model, attempt <-chan Character, comp chan<- Comparison, timeout ..
 		totalCharacters: 0,
 		correctWords:    0,
 		totalMisses:     0,
+		totalStrokes:    0,
 		failureRate:     0,
 	}
 	cap := 1000
@@ -139,7 +142,8 @@ func Compare(model, attempt <-chan Character, comp chan<- Comparison, timeout ..
 				correctCharacters: correctCharacters,
 				correctWords:      stats.CorrectWords(),
 				totalMisses:       stats.TotalMisses(),
-				failureRate:       float64(stats.TotalMisses()) / float64(index-1),
+				totalStrokes:      stats.TotalStrokes(),
+				failureRate:       stats.FailureRate(),
 			}
 
 			c.changes = []Modification{
@@ -188,7 +192,8 @@ func Compare(model, attempt <-chan Character, comp chan<- Comparison, timeout ..
 						correctCharacters: stats.CorrectCharacters() + 1,
 						correctWords:      words,
 						totalMisses:       stats.TotalMisses(),
-						failureRate:       float64(stats.TotalMisses()) / float64(index+1),
+						totalStrokes:      stats.TotalStrokes() + 1,
+						failureRate:       float64(stats.TotalMisses()) / float64(stats.TotalStrokes()+1),
 					}
 
 					c.changes = []Modification{
@@ -211,7 +216,8 @@ func Compare(model, attempt <-chan Character, comp chan<- Comparison, timeout ..
 						correctCharacters: stats.CorrectCharacters(),
 						correctWords:      stats.CorrectWords(),
 						totalMisses:       stats.TotalMisses(),
-						failureRate:       float64(stats.TotalMisses()) / float64(index+1),
+						totalStrokes:      stats.TotalStrokes() + 1,
+						failureRate:       float64(stats.TotalMisses()) / float64(stats.TotalStrokes()+1),
 					}
 
 					c.changes = []Modification{
@@ -235,7 +241,8 @@ func Compare(model, attempt <-chan Character, comp chan<- Comparison, timeout ..
 					correctCharacters: stats.CorrectCharacters(),
 					correctWords:      stats.CorrectWords(),
 					totalMisses:       stats.TotalMisses() + 1,
-					failureRate:       float64(stats.TotalMisses()+1) / float64(index+1),
+					totalStrokes:      stats.TotalStrokes() + 1,
+					failureRate:       float64(stats.TotalMisses()+1) / float64(stats.TotalStrokes()+1),
 				}
 
 				c.changes = []Modification{
@@ -281,6 +288,7 @@ type statistics struct {
 	correctCharacters int
 	correctWords      int
 	totalMisses       int
+	totalStrokes      int
 	failureRate       float64
 }
 
@@ -330,6 +338,10 @@ func (g *statistics) CorrectWords() int {
 
 func (g *statistics) TotalMisses() int {
 	return g.totalMisses
+}
+
+func (g *statistics) TotalStrokes() int {
+	return g.totalStrokes
 }
 
 func (g *statistics) FailureRate() float64 {
