@@ -1,0 +1,33 @@
+@import "colors";
+
+body {
+    #error {
+        font-size: 12pt;
+
+        #error_wrapper {
+            margin: 20vh auto;
+            margin-bottom: 5vh;
+            width: 95%;
+            max-width: 500px;
+
+            p {
+                background-color: @warning;
+                border-radius: 0.15em;
+                padding: 0.5em;
+            }
+        }
+
+        button {
+            font: inherit;
+            background: none;
+            color: @text;
+            border: none;
+            width: 100%;
+            text-align: center;
+            margin: 0;
+            margin-bottom: 20vh;
+            padding: 0;
+            cursor: pointer;
+        }
+    }
+}

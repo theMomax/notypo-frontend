@@ -40,6 +40,9 @@ type Error interface {
 	// Returns a new Error, that contains all information contained in this
 	// Error plus the new Descriptions
 	Append(...string) Error
+	// Returns a new Error, that states the given string as the reason and
+	// contains the original Error as a Description
+	Prepend(string) Error
 	// Returns the most basic error-value
 	Type() error
 }
@@ -108,6 +111,15 @@ func (e *defaultError) Elaborate(characteristics ...Characteristics) Error {
 func (e *defaultError) Append(descriptions ...string) Error {
 	n := &defaultError{
 		error:       errors.New(e.Error() + " (" + strings.Join(descriptions, ") (") + ")"),
+		basicType:   e.basicType,
+		description: e.description,
+	}
+	return n
+}
+
+func (e *defaultError) Prepend(explanation string) Error {
+	n := &defaultError{
+		error:       errors.New(explanation + " (" + e.Error() + ")"),
 		basicType:   e.basicType,
 		description: e.description,
 	}

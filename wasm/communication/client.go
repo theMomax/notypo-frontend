@@ -23,6 +23,7 @@ var (
 	ErrUnexpectedArgumentFormat = errors.New("the given arguments don't match the requirements", errors.Critical)
 	ErrStreamNotImplemented     = errors.New("the server doesn't know the reqested stream-type", errors.Critical, errors.Server)
 	ErrStreamNotFound           = errors.New("the server couldn't find a stream with the given id", errors.Critical, errors.Server)
+	ErrIllegalConfiguration     = errors.New("the configuration is not valid for this type of stream", errors.Critical)
 )
 
 // Version requests the backend-api's version-information
@@ -42,6 +43,27 @@ func Version(baseURL *url.URL) (*api.VersionResponse, errors.Error) {
 		return &v, nil
 	case 503:
 		return nil, ErrTestBuild
+	default:
+		return nil, ErrUnexpectedResponseFormat.Append(resp.Status)
+	}
+}
+
+// StreamOptions requests the available StreamTypes
+func StreamOptions(baseURL *url.URL) (api.StreamOptionsResponse, errors.Error) {
+	req, err := http.NewRequest("GET", baseURL.String()+api.PathStreamOptions, nil)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, ErrServerConnectionFailed.Append(err.Error())
+	}
+	defer resp.Body.Close()
+	switch resp.StatusCode {
+	case 200:
+		var s api.StreamOptionsResponse
+		err = json.NewDecoder(resp.Body).Decode(&s)
+		if err != nil {
+			return nil, ErrUnexpectedResponseFormat.Append(err.Error())
+		}
+		return s, nil
 	default:
 		return nil, ErrUnexpectedResponseFormat.Append(resp.Status)
 	}
@@ -67,6 +89,8 @@ func CreateRandomStream(baseURL *url.URL, description *api.StreamSupplierDescrip
 			return nil, ErrUnexpectedResponseFormat.Append(err.Error())
 		}
 		return &streamID, nil
+	case 400:
+		return nil, ErrIllegalConfiguration
 	case 501:
 		return nil, ErrStreamNotImplemented
 	default:
@@ -150,14 +174,14 @@ func ReadStreamConnection(baseURL *url.URL, buffer uint, streamConnectionID int6
 		done := false
 	outer:
 		for !done {
-			var r rune
+			var char api.BasicCharacter
 			b := make([]byte, 100)
 			n, err := c.Read(b)
 			if err != nil {
 				c.Close()
 				break outer
 			}
-			err = json.Unmarshal(b[:n], &r)
+			err = json.Unmarshal(b[:n], &char)
 			if err != nil {
 				c.Close()
 				break outer
@@ -170,7 +194,7 @@ func ReadStreamConnection(baseURL *url.URL, buffer uint, streamConnectionID int6
 					done = true
 				}
 			}()
-			mod <- character(r)
+			mod <- char
 			charRequests <- 1
 		}
 		close(charRequests)
@@ -193,10 +217,4 @@ func CloseStreamConnection(baseURL *url.URL, streamConnectionID int64) errors.Er
 	default:
 		return ErrUnexpectedResponseFormat.Append(resp.Status)
 	}
-}
-
-type character rune
-
-func (c character) Rune() rune {
-	return rune(c)
 }

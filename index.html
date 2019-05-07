@@ -6,7 +6,10 @@
     <title>notypo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" media="screen" href="style/css/main.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="style/css/loading.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="style/css/config.css">
     <link rel="stylesheet" type="text/css" media="screen" href="style/css/game.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="style/css/error.css">
     <script type="text/javascript" src="js/wasm_exec.js"></script>
     <script type="text/javascript">
         async function run(fileUrl) {
@@ -24,7 +27,17 @@
     </script>
 </head>
 <body>
-    <div id="game" class="page">
+    <div id="loading" class="page">
+      <div class="wrapper">
+        <span class="c1">n</span><span class="c2">o</span><span class="c3">t</span><span class="c4">y</span><span class="c5">o</span><span class="c6">p</span><span class="c7">o</span><span class="cursor">|</span>
+      </div>
+    </div>
+    <div id="config" class="page hidden">
+      <div id="game_types"></div>
+      <div id="game_options"></div>
+      <div id="game_start"></div>
+    </div>
+    <div id="game" class="page hidden">
         <div id="stats">
             <div id="cpm"><div class="wrapper"><span id="cpm_val" class="value">0</span><span>characters per minute</span></div></div>
             <div id="wpm">
@@ -37,13 +50,13 @@
           </div>
           <div class="scale"><div id="time_scale"></div></div>
           <div id="typewriter">
-            <div id="done"></div>
+            <div class="rtl_wrapper"><div id="done"></div></div>
             <div id="cursor" class="cursor_blink">|</div>
             <div id="todo"></div>
           </div>
-          <div id="errors">
-      
-          </div>
+      </div>
+      <div id="error" class="page hidden">
+        <div id="error_wrapper"></div>
       </div>
 </body>
 </html>

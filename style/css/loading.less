@@ -1,0 +1,283 @@
+@import "colors";
+
+@keyframes a1 {
+    0% {
+        opacity: 0;
+    }
+    4% {
+        opacity: 0;
+    }
+    5% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes a2 {
+    0% {
+        opacity: 0;
+    }
+    6% {
+        opacity: 0;
+    }
+    7% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes a3 {
+    0% {
+        opacity: 0;
+    }
+    10% {
+        opacity: 0;
+    }
+    11% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes a4 {
+    0% {
+        opacity: 0;
+    }
+    14% {
+        opacity: 0;
+    }
+    15% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes a5 {
+    0% {
+        opacity: 0;
+    }
+    17% {
+        opacity: 0;
+    }
+    18% {
+        opacity: 1;
+    }
+    54% {
+        opacity: 1;
+    }
+    55% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes a6 {
+    0% {
+        opacity: 0;
+    }
+    76% {
+        opacity: 0;
+    }
+    77% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes a7 {
+    0% {
+        opacity: 0;
+    }
+    24% {
+        opacity: 0;
+    }
+    25% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 1;
+    }
+    51% {
+        opacity: 0;
+    }
+    81% {
+        opacity: 0;
+    }
+    82% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes cursor {
+    0% {
+        opacity: 1;
+    }
+    4% {
+        transform: translateX(-6ch);
+    }
+    5% {
+        transform: translateX(-5ch);
+    }
+    6% {
+        transform: translateX(-5ch);
+    }
+    7% {
+        transform: translateX(-4ch);
+    }
+    10% {
+        transform: translateX(-4ch);
+    }
+    11% {
+        transform: translateX(-3ch);
+    }
+    14% {
+        transform: translateX(-3ch);
+    }
+    15% {
+        transform: translateX(-2ch);
+    }
+    17% {
+        transform: translateX(-2ch);
+    }
+    18% {
+        transform: translateX(-1ch);
+    }
+    24% {
+        transform: translateX(-1ch);
+    }
+    25% {
+        transform: translateX(-0ch);
+        opacity: 1;
+    }
+    30% {
+        opacity: 0;
+    }
+    35% {
+        opacity: 1;
+    }
+    40% {
+        opacity: 1;
+    }
+    45% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+        transform: translateX(-0ch);
+    }
+    51% {
+        transform: translateX(-1ch);
+    }
+    54% {
+        transform: translateX(-1ch);
+    }
+    55% {
+        transform: translateX(-2ch);
+        opacity: 1;
+    }
+    65% {
+        opacity: 0;
+    }
+    76% {
+        opacity: 1;
+        transform: translateX(-2ch);
+    }
+    77% {
+        transform: translateX(-1ch);
+    }
+    81% {
+        transform: translateX(-1ch);
+    }
+    82% {
+        transform: translateX(-0ch);
+    }
+    90% {
+        opacity: 1;
+    }
+    95% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(-0ch);
+    }
+}
+
+body {
+    #loading {
+        .wrapper {
+            color: @passive;
+            font-size: 15vw;
+            width: 100%;
+            position: absolute;
+            top: 50%;
+            line-height: 2em;
+            margin-top: -1em;
+            display: flex;
+            justify-content: center;
+        
+            span {
+                display: inline-block;
+                text-align: center;
+                animation-duration: 5s;
+                animation-iteration-count: infinite;
+                animation-delay: 0.2s;
+                animation-timing-function: linear;
+                opacity: 0;
+            }
+
+            .cursor {
+                width: 1em;
+                opacity: 0;
+                margin: 0 -0.5em 0 -0.5em;
+                transform: translate(-6ch);
+                animation-name: cursor;
+            }
+
+            .c1 {
+                animation-name: a1;
+            }
+
+            .c2 {
+                animation-name: a2;
+            }
+
+            .c3 {
+                animation-name: a3;
+            }
+
+            .c4 {
+                animation-name: a4;
+            }
+
+            .c5 {
+                width: 0em;
+                animation-name: a5;
+                color: @warning;
+            }
+
+            .c6 {
+                animation-name: a6;
+            }
+
+            .c7 {
+                animation-name: a7;
+            }
+        }
+    }
+}

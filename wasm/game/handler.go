@@ -89,21 +89,15 @@ func Stop() {
 // nil, any key is accepted. If there is already a game running, this function
 // panics with ErrAlreadyRunning. In addition all callbacks are called
 // asynchronously after each input
-func AttemptInputProvider(charset []rune, callbacks ...func(rune)) <-chan comparison.Character {
+func AttemptInputProvider(charset []api.Character, callbacks ...func(api.Character)) <-chan comparison.Character {
 	sort.Slice(charset, func(i, j int) bool {
-		return charset[i] < charset[j]
+		return charset[i].Rune() < charset[j].Rune()
 	})
 	apt := make(chan comparison.Character, 5)
 	var attemptKeyboardListener js.Func = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		var c rune
-		name := args[0].Get("key").String()
-		if name == "Backspace" {
-			c = comparison.BS
-		} else {
-			c = []rune(name)[0]
-		}
+		c := api.BasicCharacter(args[0].Get("charCode").Int())
 		if charset == nil || contains(charset, c) {
-			apt <- character(c)
+			apt <- c
 			for _, f := range callbacks {
 				go f(c)
 			}
@@ -152,17 +146,11 @@ func ModelInputProvider(description *api.StreamSupplierDescription) <-chan compa
 	return mod
 }
 
-type character rune
-
-func (c character) Rune() rune {
-	return rune(c)
-}
-
-func contains(s []rune, c rune) bool {
+func contains(s []api.Character, c api.Character) bool {
 	i := sort.Search(len(s), func(i int) bool {
-		return s[i] >= c
+		return s[i].Rune() >= c.Rune()
 	})
-	if i < len(s) && s[i] == c {
+	if i < len(s) && s[i].Rune() == c.Rune() {
 		return true
 	}
 	return false
@@ -173,21 +161,17 @@ func onstop(f func()) {
 }
 
 func handlePanics(h func(errors.Error)) {
-	func() {
-		e := recover()
-		if e == nil {
-			return
+	e := recover()
+	if e == nil {
+		return
+	}
+	err, ok := e.(errors.Error)
+	if !ok {
+		h(ErrUnknownPanicCause.Append(err.Error()))
+	} else {
+		if err != nil {
+			h(err)
+			Stop()
 		}
-		err, ok := e.(errors.Error)
-		if !ok {
-			h(ErrUnknownPanicCause.Append(err.Error()))
-		} else {
-			if err != nil {
-				h(err)
-			}
-			if err.Is(errors.Critical) {
-				Stop()
-			}
-		}
-	}()
+	}
 }

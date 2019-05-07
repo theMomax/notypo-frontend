@@ -1,0 +1,101 @@
+@import "colors";
+
+body {
+    #config {
+        font-size: 12pt;
+        display: grid;
+        grid-template-columns: 30% auto;
+        grid-template-rows: 8em auto;
+
+        button {
+            height: 2em;
+            display: block;
+            font-size: inherit;
+            font-family: inherit;
+            border: none;
+            border-radius: 0.15em;
+            background: none;
+            color: @passive;
+            padding: 0.25em;
+            margin: 0.5em;
+            cursor: pointer;
+        }
+
+        .active {
+            color: @text;
+        }
+
+        div {
+            padding: 3em;
+
+            div {
+                padding: 0;
+            }
+        }
+
+        #game_start {
+
+            grid-column: 2;
+            grid-row: 1;
+            justify-self: right;
+
+            button {
+                min-width: 15vw;
+                margin: 0;
+                background-color: @passive;
+                color: @text;
+            }
+        }
+
+        #game_types {
+            grid-column: 1;
+            grid-row-start: 1;
+            grid-row-end: 2;
+
+            button {
+                width: 100%;
+                margin: 0;
+                margin-bottom: 0.5em;
+                background-color: @passive;
+                color: @text;
+            }
+
+            .active {
+                background-color: @active;
+            }
+        }
+
+        #game_options {
+            height: 100%;
+            overflow-y: scroll;
+            padding: 0;
+            grid-column: 2;
+            grid-row: 2;
+
+            div {
+                .game_description {
+                    width: fit-content;
+                    border-bottom: 1px solid @text;
+                    padding: 1em;
+                    margin-bottom: 1em;
+                }
+
+                .name {
+                    margin: 1em;
+                    margin-top: 3em;
+                    display: none;
+                }
+
+                .description {
+                    margin: 1em;
+                    color: @passive;
+                    display: none;
+                }
+
+                div {
+
+                }
+            }
+        }
+    }
+}

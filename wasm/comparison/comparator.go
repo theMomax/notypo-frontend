@@ -9,21 +9,19 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/theMomax/notypo-backend/api"
 	"github.com/theMomax/notypo-frontend/wasm/errors"
 )
 
 // BS stands for backspace
-const BS = '\u0008'
+const BS api.BasicCharacter = '\u0008'
 
 // ErrIllegalModelInput is thrown, if the "model" stream contains a
 // non-printable Character as defined by the unicode.IsPrint method
 var ErrIllegalModelInput = errors.New("the model-input-stream contained an illegal character", errors.Critical, errors.Input)
 
 // Character is the required type for the input-streams
-type Character interface {
-	// Rune returns the character's utf-8 representation
-	Rune() rune
-}
+type Character api.Character
 
 // Comparison is the comparison's output-stream type. It holds the stream's current
 // state, the latest changes and some statistics
@@ -125,7 +123,7 @@ func Compare(model, attempt <-chan Character, comp chan<- Comparison, timeout ..
 		}
 
 		c := comparison{}
-		if a.Rune() == BS {
+		if a.Rune() == BS.Rune() {
 			if index == 0 {
 				continue
 			}
@@ -169,7 +167,7 @@ func Compare(model, attempt <-chan Character, comp chan<- Comparison, timeout ..
 			if !unicode.IsPrint(m.Rune()) {
 				done <- true
 				r := m.Rune()
-				if r == BS {
+				if r == BS.Rune() {
 					r = '\u2190'
 				}
 				panic(ErrIllegalModelInput.Append(string(r)))

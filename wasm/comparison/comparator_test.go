@@ -1,7 +1,6 @@
 package comparison
 
 import (
-	"fmt"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -60,7 +59,6 @@ func TestBackspaceOverflow(t *testing.T) {
 
 func TestComparisonLogic(t *testing.T) {
 	c := make(chan Comparison)
-	fmt.Println("=============")
 	go Compare(stream(
 		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', ' ', 'j', 'k', ' ', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
 	), stream(

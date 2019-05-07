@@ -1,29 +1,42 @@
 package ui
 
-import "github.com/dennwc/dom"
+import (
+	"github.com/dennwc/dom"
+)
 
-// Page represents a html-page-view
-type Page interface {
+// page represents a html-page-view
+type page interface {
 	Show()
 	Hide()
+	Root() *dom.Element
 }
 
-// page is the base-implementation of Page
-type page struct {
+// pageimpl is the base-implementation of Page
+type pageimpl struct {
 	root *dom.Element
 }
 
-// NewPage greates a basic Page from the html-element with the given id
-func NewPage(id string) Page {
-	return &page{
-		root: dom.Doc.GetElementById("id"),
+// initPage creates a basic Page from the html-element with the given id
+func initPage(id string) page {
+	return &pageimpl{
+		root: dom.Doc.GetElementById(id),
 	}
 }
 
-func (p *page) Show() {
+func initPageFromElement(e *dom.Element) page {
+	return &pageimpl{
+		root: e,
+	}
+}
+
+func (p *pageimpl) Show() {
 	p.root.ClassList().Remove("hidden")
 }
 
-func (p *page) Hide() {
+func (p *pageimpl) Hide() {
 	p.root.ClassList().Add("hidden")
+}
+
+func (p *pageimpl) Root() *dom.Element {
+	return p.root
 }
